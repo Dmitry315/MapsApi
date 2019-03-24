@@ -27,8 +27,11 @@ while True:
     response = requests.get(api_server, params=params)
     with open(map_file, mode='wb') as f:
         f.write(response.content)
-    # if keys[pygame.K_PAGEUP]:
-    # if keys[pygame.K_PAGEDOWN]:
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_PAGEUP] and zoom < 17:
+        zoom += 1
+    if keys[pygame.K_PAGEDOWN] and zoom > 0:
+        zoom -= 1
 
     screen.blit(pygame.image.load(map_file), (0, 0))
     # Переключаем экран и ждем закрытия окна.
