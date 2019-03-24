@@ -1,6 +1,7 @@
 import requests
 import sys
 import os
+from time import sleep
 import pygame
 try:
     cords = input('Координаты(долгота,широта):')
@@ -24,7 +25,12 @@ while True:
         "z": zoom,
         "l": "map"
     }
+    shift = 360 / (2**zoom)
     response = requests.get(api_server, params=params)
+    if not response:
+        print(response.content)
+        print(cords)
+
     with open(map_file, mode='wb') as f:
         f.write(response.content)
     keys = pygame.key.get_pressed()
@@ -32,7 +38,24 @@ while True:
         zoom += 1
     if keys[pygame.K_PAGEDOWN] and zoom > 0:
         zoom -= 1
-
+    x, y = [float(i) for i in cords.split(',')]
+    if keys[pygame.K_UP]:
+        y += shift
+        if y > 180:
+            y = 180 - y % 180
+    elif keys[pygame.K_DOWN]:
+        y -= shift
+        if y < -180:
+            y = -180 - y % 180
+    elif keys[pygame.K_LEFT]:
+        x -= shift
+        if x < -180:
+            x = -180 - x % 180
+    elif keys[pygame.K_RIGHT]:
+        x += shift
+        if x > 180:
+            x = 180 - x % 180
+    cords = '{},{}'.format(x,y)
     screen.blit(pygame.image.load(map_file), (0, 0))
     # Переключаем экран и ждем закрытия окна.
     pygame.display.flip()
