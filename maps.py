@@ -105,6 +105,7 @@ class Window(QMainWindow):
             geo_point = "{0},{1}".format(point[0], point[1])
             num = str(len(self.marks) + 1)
             mark = geo_point+',pm2rdm' + num
+            self.cords = geo_point
             if mark[:-1] not in [i[:-1] for i in self.marks]:
                 self.marks.append(mark)
             self.depict()
