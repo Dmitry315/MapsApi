@@ -17,11 +17,15 @@ class Window(QMainWindow):
         self.cords = '0,0'
         self.zoom = 5
         self.kind = 'map'
+        self.map_file = 'map.png'
         self.depict()
         self.Up.clicked.connect(self.move)
         self.Down.clicked.connect(self.move)
         self.Right.clicked.connect(self.move)
         self.Left.clicked.connect(self.move)
+        self.scheme.clicked.connect(self.change_kind)
+        self.satlate.clicked.connect(self.change_kind)
+        self.hybrid.clicked.connect(self.change_kind)
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_PageUp and self.zoom < 17:
             self.zoom += 1
@@ -38,9 +42,9 @@ class Window(QMainWindow):
         response = requests.get(api_server, params=params)
         if not response:
             print(response.content)
-        with open(map_file, mode='wb') as f:
+        with open(self.map_file, mode='wb') as f:
             f.write(response.content)
-        pixmap = QPixmap('map.png')
+        pixmap = QPixmap(self.map_file)
         self.map_label.setPixmap(pixmap)
         self.map_label.resize(self.map_label.sizeHint())
 
@@ -64,6 +68,19 @@ class Window(QMainWindow):
             if x > 180:
                 x = -180 + x % 180
         self.cords = '{},{}'.format(x, y)
+        self.depict()
+
+    def change_kind(self):
+        kind = self.sender().text()
+        if kind == 'Схема':
+            self.map_file = 'map.png'
+            self.kind = 'map'
+        elif kind == 'Спутник':
+            self.map_file = 'map.jpg'
+            self.kind = 'sat'
+        elif kind == 'Гибрид':
+            self.map_file = 'map.jpg'
+            self.kind = 'sat,skl'
         self.depict()
 if __name__ == '__main__':
     app = QApplication(argv)
