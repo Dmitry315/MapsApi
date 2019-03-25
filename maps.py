@@ -6,8 +6,10 @@ import requests
 from PyQt5.QtCore import Qt
 
 api_server = "http://static-maps.yandex.ru/1.x/"
+geocoder_api_server = "http://geocode-maps.yandex.ru/1.x/"
+search_api_server = "https://search-maps.yandex.ru/v1/"
 map_file = 'map.png'
-
+API_KEY = 'dda3ddba-c9ea-4ead-9010-f43fbc15c6e3'
 
 
 class Window(QMainWindow):
@@ -18,6 +20,7 @@ class Window(QMainWindow):
         self.zoom = 5
         self.kind = 'map'
         self.map_file = 'map.png'
+        self.marks = []
         self.depict()
         self.Up.clicked.connect(self.move)
         self.Down.clicked.connect(self.move)
@@ -26,6 +29,7 @@ class Window(QMainWindow):
         self.scheme.clicked.connect(self.change_kind)
         self.satlate.clicked.connect(self.change_kind)
         self.hybrid.clicked.connect(self.change_kind)
+        self.search_button.clicked.connect(self.find)
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_PageUp and self.zoom < 17:
             self.zoom += 1
@@ -37,8 +41,10 @@ class Window(QMainWindow):
         params = {
             "ll": self.cords,
             "z": self.zoom,
-            "l": self.kind
+            "l": self.kind,
         }
+        if self.marks:
+            params['pt'] = '~'.join(self.marks)
         response = requests.get(api_server, params=params)
         if not response:
             print(response.content)
@@ -82,6 +88,28 @@ class Window(QMainWindow):
             self.map_file = 'map.jpg'
             self.kind = 'sat,skl'
         self.depict()
+
+    def find(self):
+        try:
+            toponym_to_find = self.toponym.text()
+            search_params = {
+                "apikey": API_KEY,
+                "text": toponym_to_find,
+                "lang": "ru_RU",
+                "type": "geo"
+            }
+            response = requests.get(search_api_server, params=search_params)
+            json_response = response.json()
+            organization = json_response["features"][0]
+            point = organization["geometry"]["coordinates"]
+            geo_point = "{0},{1}".format(point[0], point[1])
+            num = str(len(self.marks) + 1)
+            mark = geo_point+',pm2rdm' + num
+            if mark[:-1] not in [i[:-1] for i in self.marks]:
+                self.marks.append(mark)
+            self.depict()
+        except Exception as err:
+            pass
 if __name__ == '__main__':
     app = QApplication(argv)
     ex = Window()
