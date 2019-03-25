@@ -30,6 +30,7 @@ class Window(QMainWindow):
         self.satlate.clicked.connect(self.change_kind)
         self.hybrid.clicked.connect(self.change_kind)
         self.search_button.clicked.connect(self.find)
+        self.delete_marks_button.clicked.connect(self.delete_marks)
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_PageUp and self.zoom < 17:
             self.zoom += 1
@@ -111,6 +112,10 @@ class Window(QMainWindow):
             self.depict()
         except Exception as err:
             pass
+
+    def delete_marks(self):
+        self.marks = []
+        self.depict()
 if __name__ == '__main__':
     app = QApplication(argv)
     ex = Window()
